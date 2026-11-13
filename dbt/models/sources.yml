@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: silver
+    database: urban_pulse
+    schema: silver
+    tables:
+      - name: cycling
+      - name: air_quality

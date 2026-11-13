@@ -1,0 +1,31 @@
+version: 2
+
+models:
+  - name: cycling_gold_dbt
+    description: Daily rollup per segment, mirroring the SDP and plain-Spark gold tables
+    columns:
+      - name: segment_id
+        data_tests:
+          - not_null
+      - name: day
+        data_tests:
+          - not_null
+      - name: avg_uptime
+        data_tests:
+          - not_null
+
+  - name: air_quality_gold_dbt
+    description: Daily rollup per station and pollutant, mirroring the SDP gold table
+    columns:
+      - name: station_number
+        data_tests:
+          - not_null
+      - name: pollutant
+        data_tests:
+          - not_null
+      - name: day
+        data_tests:
+          - not_null
+      - name: avg_value
+        data_tests:
+          - not_null

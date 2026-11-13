@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}  # allows manual triggering from the GH UI
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+      - run: uv sync --frozen
+      - run: uv run ruff check .
+      - run: uv run mypy src/
+      - run: uv run pytest
+
+  ingest:
+    runs-on: ubuntu-latest
+    needs: quality
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+
+      - name: Restore DuckDB cache
+        uses: actions/cache/restore@v4
+        with:
+          path: data/
+          key: urban-pulse-duckdb-${{ github.run_id }}
+          restore-keys: |
+            urban-pulse-duckdb-
+
+      - run: uv sync --no-dev --frozen
+      - name: Run pipeline
+        run: uv run python -m urban_pulse.main
+        env:
+          TELRAAM_API_KEY: ${{ secrets.TELRAAM_API_KEY }}
+          TELRAAM_SEGMENT_IDS: ${{ secrets.TELRAAM_SEGMENT_IDS }}
+          LUCHTMEETNET_STATION_NUMBERS: ${{ secrets.LUCHTMEETNET_STATION_NUMBERS }}
+          DUCKDB_PATH: ./data/urban_pulse.duckdb
+
+      - name: Save DuckDB cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: data/
+          key: urban-pulse-duckdb-${{ github.run_id }}
+          

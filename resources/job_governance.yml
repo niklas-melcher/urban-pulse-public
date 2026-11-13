@@ -1,0 +1,10 @@
+resources:
+  jobs:
+    apply_uc_governance:
+      name: urban-pulse-apply-uc-governance
+      tasks:
+        - task_key: run_governance_sql
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../sql/uc_governance.sql

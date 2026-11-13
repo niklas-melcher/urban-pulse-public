@@ -1,0 +1,62 @@
+resources:
+  jobs:
+    urban_pulse_job:
+      name: urban-pulse-pipeline
+      schedule:
+        quartz_cron_expression: "0 0 3 * * ?"
+        timezone_id: "UTC"
+        pause_status: PAUSED   # paused 2026-11-09, see ADR 0014
+      email_notifications:
+        on_failure:
+          - you@example.com # redacted for public repo.
+      tasks:
+        - task_key: fetch_cycling
+          spark_python_task:
+            python_file: ../src/urban_pulse/spark/01_cycling_bronze.py
+          environment_key: default
+        - task_key: transform_cycling_silver
+          depends_on:
+            - task_key: fetch_cycling
+          spark_python_task:
+            python_file: ../src/urban_pulse/spark/02_cycling_silver.py
+          environment_key: default
+        - task_key: fetch_air_quality
+          spark_python_task:
+            python_file: ../src/urban_pulse/spark/03_air_quality_bronze.py
+          environment_key: default
+        - task_key: transform_air_quality_silver
+          depends_on:
+            - task_key: fetch_air_quality
+          spark_python_task:
+            python_file: ../src/urban_pulse/spark/04_air_quality_silver.py
+          environment_key: default
+        - task_key: build_gold
+          depends_on:
+            - task_key: transform_cycling_silver
+            - task_key: transform_air_quality_silver
+          spark_python_task:
+            python_file: ../src/urban_pulse/spark/05_gold.py
+          environment_key: default
+        - task_key: cycling_silver_sdp
+          depends_on:
+            - task_key: fetch_cycling
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.cycling_silver_sdp.id}
+        # PAUSED 2026-10-15: failing nightly (Redpanda trial ending).
+        # Revisit with a different broker or approach; see ADR 0010.
+        # - task_key: kafka_stream_cycling
+        #   spark_python_task:
+        #     python_file: ../src/urban_pulse/spark/07_kafka_stream_bronze.py
+        #   environment_key: default
+        - task_key: air_quality_silver_sdp
+          depends_on:
+            - task_key: fetch_air_quality
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.air_quality_silver_sdp.id}
+      environments:
+        - environment_key: default
+          spec:
+            environment_version: "2"
+            dependencies:
+              - requests
+              - tenacity

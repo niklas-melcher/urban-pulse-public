@@ -1,0 +1,10 @@
+.env
+data/
+__pycache__/
+
+.databricks
+
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/
+.databricks/

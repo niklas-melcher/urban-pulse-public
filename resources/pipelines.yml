@@ -1,0 +1,42 @@
+resources:
+  pipelines:
+    cycling_silver_sdp:
+      name: urban-pulse-cycling-silver-sdp
+      catalog: urban_pulse
+      schema: silver
+      serverless: true
+      libraries:
+        - file:
+            path: ../src/urban_pulse/spark/06_cycling_silver_sdp.py
+        - file:
+            path: ../src/urban_pulse/spark/09_cycling_gold_sdp.py
+    air_quality_silver_sdp:
+      name: urban-pulse-air-quality-silver-sdp
+      catalog: urban_pulse
+      schema: silver
+      serverless: true
+      libraries:
+        - file:
+            path: ../src/urban_pulse/spark/08_air_quality_silver_sdp.py
+        - file:
+            path: ../src/urban_pulse/spark/13_air_quality_gold_sdp.py
+    autoloader_demo:
+      name: urban-pulse-autoloader-demo
+      catalog: urban_pulse
+      schema: bronze
+      serverless: true
+      libraries:
+        - file:
+            path: ../src/urban_pulse/spark/10_autoloader_streaming_demo.py
+    # Expected to FAIL on Free Edition: managed file events need an
+    # external location with file events enabled; managed volumes have
+    # none. See ADR 0012. Re-enable where that is configurable.
+    # autoloader_file_events_demo:
+    #   name: urban-pulse-autoloader-file-events-demo
+    #   catalog: urban_pulse
+    #   schema: bronze
+    #   serverless: true
+    #   libraries:
+    #     - file:
+    #         path: ../src/urban_pulse/spark/12_autoloader_file_events_demo.py
+  

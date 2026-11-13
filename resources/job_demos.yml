@@ -1,0 +1,29 @@
+resources:
+  jobs:
+    run_copy_into_demo:
+      name: urban-pulse-copy-into-demo
+      tasks:
+        - task_key: run_copy_into
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../sql/copy_into_demo.sql
+    run_union_explode_demo:
+      name: urban-pulse-union-explode-demo
+      tasks:
+        - task_key: run_union_explode
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../sql/union_explode_demo.sql
+    run_explain_demo:
+      name: urban-pulse-explain-demo
+      tasks:
+        - task_key: explain_demo
+          spark_python_task:
+            python_file: ../src/urban_pulse/spark/11_explain_demo.py
+          environment_key: default
+      environments:
+        - environment_key: default
+          spec:
+            environment_version: "2"
